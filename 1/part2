@@ -1,0 +1,25 @@
+#!/bin/bash
+
+count=0
+
+last1=-1
+last2=-1
+lastSum=999999
+
+while read depth; do
+    if test $last2 -ne -1; then
+        sum=$(( last1 + last2 + depth ))
+        
+        if test $sum -gt $lastSum; then
+            (( count++ ))
+        fi
+
+        lastSum=$sum
+    fi
+
+
+    last2=$last1
+    last1=$depth
+done < input
+
+echo "count is $count"

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+forward=0
+down=0
+aim=0
+
+while read line; do
+    direction="$(echo $line | cut -f1 -d" ")"
+    magnitude="$(echo $line | cut -f2 -d" ")"
+
+    if test "$direction" = "up"; then
+        (( aim -= magnitude ))
+    elif test "$direction" = "down"; then
+        (( aim += magnitude ))
+    else
+        (( forward += magnitude ))
+        (( down += aim * magnitude ))
+    fi
+done < input
+
+echo "result is $(( forward * down ))"

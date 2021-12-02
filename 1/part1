@@ -1,0 +1,16 @@
+#!/bin/bash
+
+count=0
+
+lastDepth=99999
+
+while read depth; do
+    if test $depth -gt $lastDepth; then
+        (( count++ ))
+    fi
+
+
+    lastDepth=$depth
+done < input
+
+echo "count is $count"
