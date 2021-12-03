@@ -1,0 +1,26 @@
+
+#!/bin/bash
+
+totalCount=0
+gamma="000000000000"
+epsilon="000000000000"
+
+while read binary; do
+    for (( index=0; index < 12; ++index )); do
+        (( number[index] += ${binary:index:1} ))
+    done
+
+    (( ++totalCount ))
+done < input
+
+for (( index=0; index < 12; ++index )); do
+    if test ${number[index]} -ge $(( totalCount / 2 )); then
+        gamma="${gamma:0:index}1${gamma:$(( index + 1 ))}"
+        epsilon="${epsilon:0:index}0${epsilon:$(( index + 1 ))}"
+    else
+        gamma="${gamma:0:index}0${gamma:$(( index + 1 ))}"
+        epsilon="${epsilon:0:index}1${epsilon:$(( index + 1 ))}"
+    fi
+done
+
+echo "result is $(( 2#$gamma * 2#$epsilon ))"

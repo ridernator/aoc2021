@@ -1,0 +1,48 @@
+#!/bin/bash
+
+getReading() {
+    if test "$1" = "o2"; then
+        flag=1
+    else
+        flag=0
+    fi
+
+    while read binary; do
+        numbers[index]=$binary
+
+        (( ++index ))
+    done < input
+
+    for (( index=0; index < 12; ++index )); do
+        numOnes=0
+
+        for number in ${numbers[*]}; do
+            if test ${number:index:1} -eq 1; then
+                (( ++numOnes ))
+            fi
+        done
+
+        if (( $(echo "$numOnes >= (${#numbers[@]} * 0.5)" | bc -l) )); then
+            search="^[0-1]{$index}${flag}"
+        else
+            search="^[0-1]{$index}$(( flag ^ 1))"
+        fi
+
+        for i in ${!numbers[@]}; do
+            if [[ ${numbers[i]} =~ $search ]]; then
+                numbersCopy+=(${numbers[i]})
+            fi
+        done
+
+        numbers=(${numbersCopy[@]})
+        unset numbersCopy
+
+        if test ${#numbers[@]} -eq 1; then
+            break;
+        fi
+    done
+
+    echo ${numbers[0]}
+}
+
+echo "result is $(( 2#$(getReading o2) * 2#$(getReading co2) ))"
