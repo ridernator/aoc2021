@@ -1,0 +1,95 @@
+#!/bin/bash
+
+declare -ir DIMENSION=5
+
+lineComplete() {
+    local -ar elements=($(echo $1 | tr '@' '\n'))
+
+    for ((index1=0; index1<DIMENSION; ++index1)); do
+        found=1
+
+        for ((index2=0; index2<DIMENSION; ++index2)); do
+            if test ${elements[$((index1 * DIMENSION + index2))]} != "-"; then
+                found=0
+
+                break
+            fi
+        done
+
+        if test $found -eq 1; then
+            return 0
+        fi
+    done
+    
+    for ((index1=0; index1<DIMENSION; ++index1)); do
+        found=1
+
+        for ((index2=0; index2<DIMENSION; ++index2)); do
+            if test ${elements[$((index2 * DIMENSION + index1))]} != "-"; then
+                found=0
+
+                break
+            fi
+        done
+
+        if test $found -eq 1; then
+            return 0
+        fi
+    done 
+
+    return 1
+}
+
+boardScore() {
+    local -ir lastCalled=$1
+    local -ar elements=($(echo $2 | tr '@' '\n'))
+    local -i total=0
+
+    for ((index=0; index<DIMENSION*DIMENSION; ++index)); do
+        if test ${elements[$index]} != "-"; then
+            ((total += elements[index]))
+        fi
+    done
+
+    echo $((total * lastCalled))
+}
+
+main() {
+    local -ar numbers=$(grep ',' input | tr ',' '\n')
+
+    local -a boards
+
+    local -i lineCounter=0
+    local -i boardIndex=0
+
+    while read line; do
+        # Skip first 2 lines
+        if test $((lineCounter++)) -lt 2; then
+            continue
+        fi
+
+        if test -z "$line"; then
+            boards[$((++boardIndex))]="@"
+        else
+            boards[$boardIndex]="${boards[boardIndex]}$(echo $line | tr -s ' ' | tr ' ' '@')@"
+        fi
+    done < input
+
+    ((++boardIndex))
+
+    for number in ${numbers[@]}; do
+        for ((index=0; index<boardIndex; ++index)); do
+            if [[ ${boards[$index]} =~ @${number}@ ]]; then
+                boards[$index]="$(echo ${boards[$index]} | sed "s/@${number}@/@-@/")"
+
+                if lineComplete ${boards[$index]}; then
+                    echo "Found a winner with score of $(boardScore $number ${boards[$index]})"
+
+                    exit
+                fi
+            fi
+        done 
+    done
+}
+
+main "$@"
