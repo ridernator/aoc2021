@@ -1,6 +1,6 @@
 #!/bin/bash
 
-declare -ir DIMENSION=1000
+declare -ir DIMENSION=10
 
 main() {
     local -a array;
@@ -32,8 +32,17 @@ main() {
             for ((index=x0; index<=x1; ++index)); do
                 ((++array[((ya * DIMENSION + index))]))
             done
+        else
+            x0=$((xa < xb ? xa : xb))
+            x1=$((xa > xb ? xa : xb))
+            incOrDec=$((yb > ya ? 1 : 0))
+
+            for ((index=x0; index<=x1; ++index)); do
+                ((++array[((ya * DIMENSION + index))]))
+                ((ya += incOrDec))
+            done
         fi
-    done < input
+    done < input2
 
     echo "Checking for intersections"
     counter=0
@@ -47,7 +56,11 @@ main() {
 
 #    for ((index0=0; index0<DIMENSION; ++index0)); do
 #        for ((index1=0; index1<DIMENSION; ++index1)); do
-#            echo -n "${array[$((index0 * DIMENSION + index1))]} "
+#            if test ${array[$((index0 * DIMENSION + index1))]} -eq 0; then
+#                echo -n ". "
+#            else
+#                echo -n "${array[$((index0 * DIMENSION + index1))]} "
+#            fi
 #        done
 #
 #        echo
