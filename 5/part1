@@ -1,0 +1,57 @@
+#!/bin/bash
+
+declare -ir DIMENSION=1000
+
+main() {
+    local -a array;
+
+    echo "Initialising array"
+    for ((index=0; index<DIMENSION*DIMENSION; ++index)); do
+        array[index]=0
+    done
+
+    echo "Parsing input"
+    while read line; do
+        line=$(echo $line | tr "\-\>" "," | tr -d ' ' | tr -s ',')
+        xa=$(echo $line | cut -d',' -f1)
+        ya=$(echo $line | cut -d',' -f2)
+        xb=$(echo $line | cut -d',' -f3)
+        yb=$(echo $line | cut -d',' -f4)
+
+        if test $xa -eq $xb; then
+            y0=$((ya < yb ? ya : yb))
+            y1=$((ya > yb ? ya : yb))
+
+            for ((index=y0; index<=y1; ++index)); do
+                ((++array[((index * DIMENSION + xa))]))
+            done
+        elif test $ya -eq $yb; then
+            x0=$((xa < xb ? xa : xb))
+            x1=$((xa > xb ? xa : xb))
+
+            for ((index=x0; index<=x1; ++index)); do
+                ((++array[((ya * DIMENSION + index))]))
+            done
+        fi
+    done < input
+
+    echo "Checking for intersections"
+    counter=0
+    for ((index=0; index<DIMENSION*DIMENSION; ++index)); do
+        if test ${array[$index]} -gt 1; then
+            ((++counter))
+        fi
+    done
+
+    echo "Intersection count is $counter"
+
+#    for ((index0=0; index0<DIMENSION; ++index0)); do
+#        for ((index1=0; index1<DIMENSION; ++index1)); do
+#            echo -n "${array[$((index0 * DIMENSION + index1))]} "
+#        done
+#
+#        echo
+#    done
+}
+
+main "$@"
