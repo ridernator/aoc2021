@@ -1,0 +1,27 @@
+#!/bin/bash
+
+declare -ri ITERATIONS=80
+
+main() {
+    local -a fish=($(grep ',' input | tr ',' '\n'))
+
+    for ((day=0; day < ITERATIONS; ++day)); do
+        fishSize=${#fish[@]}
+        additionalFishCount=0
+        for ((index=0; index<fishSize; ++index)); do
+            if test $((--fish[index])) -lt 0; then
+                fish[$index]=6
+                fish[$((fishSize + additionalFishCount++))]=8
+            fi
+        done
+
+        echo "Number of fish after day $((day + 1))=${#fish[@]}"
+
+#        for ((index=0; index<${#fish[@]}; ++index)); do
+#            echo -n "${fish[$index]},"
+#        done
+#        echo
+    done
+}
+
+main "$@"
