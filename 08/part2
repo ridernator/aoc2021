@@ -1,0 +1,122 @@
+#!/bin/bash
+
+#     0:      1:      2:      3:      4:
+#    aaaa    ....    aaaa    aaaa    ....
+#   b    c  .    c  .    c  .    c  b    c
+#   b    c  .    c  .    c  .    c  b    c
+#    ....    ....    dddd    dddd    dddd
+#   e    f  .    f  e    .  .    f  .    f
+#   e    f  .    f  e    .  .    f  .    f
+#    gggg    ....    gggg    gggg    ....
+#   
+#     5:      6:      7:      8:      9:
+#    aaaa    aaaa    aaaa    aaaa    aaaa
+#   b    .  b    .  .    c  b    c  b    c
+#   b    .  b    .  .    c  b    c  b    c
+#    dddd    dddd    ....    dddd    dddd
+#   .    f  e    f  .    f  e    f  .    f
+#   .    f  e    f  .    f  e    f  .    f
+#    gggg    gggg    ....    gggg    gggg
+
+# a=8
+# b=6
+# c=8 also in num with only 2
+# d=7 also in num with only 4
+# e=4
+# f=9
+# g=7
+
+declare -rA DIGIT_LOOKUP=( ["012456"]=0 \
+                           ["25"]=1 \
+                           ["02346"]=2 \
+                           ["02356"]=3 \
+                           ["1235"]=4 \
+                           ["01356"]=5 \
+                           ["013456"]=6 \
+                           ["025"]=7 \
+                           ["0123456"]=8 \
+                           ["012356"]=9 )
+
+main() {
+    local -i totalCount=0
+
+    while read line; do
+        local -a signals=($(echo $line | cut -d'|' -f1))
+        local -a outputs=($(echo $line | cut -d'|' -f2))
+        local -A lookup
+
+        # Generate lookup table for signal elements
+        for letter in a b c d e f g; do
+            letterCount=0
+
+            for signal in ${signals[@]}; do
+                if [[ $signal =~ .*${letter}.* ]]; then
+                    ((++letterCount))
+                fi
+            done
+
+            case $letterCount in
+                6)
+                    lookup[$letter]=1
+                ;;
+
+                4)
+                    lookup[$letter]=4
+                ;;
+
+                9)
+                    lookup[$letter]=5
+                ;;
+
+                7)
+                    for signal in ${signals[@]}; do
+                        if test ${#signal} -eq 4; then
+                            if [[ $signal =~ .*${letter}.* ]]; then
+                                lookup[$letter]=3
+                            else
+                                lookup[$letter]=6
+                            fi
+
+                            break
+                        fi
+                    done
+                ;;
+
+                8)
+                    for signal in ${signals[@]}; do
+                        if test ${#signal} -eq 2; then
+                            if [[ $signal =~ .*${letter}.* ]]; then
+                                lookup[$letter]=2
+                            else
+                                lookup[$letter]=0
+                            fi
+
+                            break
+                        fi
+                    done
+                ;;
+            esac
+        done
+
+        # Convert values to correct numbers
+        for ((index=0; index<${#outputs[@]}; ++index)); do
+            # Convert to correct numbers
+            outputs[$index]=$(echo ${outputs[$index]} | tr "abcdefg" "${lookup['a']}${lookup['b']}${lookup['c']}${lookup['d']}${lookup['e']}${lookup['f']}${lookup['g']}")
+
+            # Sort string
+            outputs[$index]=$(echo ${outputs[$index]} | grep -o . | sort |tr -d "\n")
+        done
+
+        subCount=$((1000 * ${DIGIT_LOOKUP[${outputs[0]}]}))
+        ((subCount += 100 * ${DIGIT_LOOKUP[${outputs[1]}]}))
+        ((subCount += 10 * ${DIGIT_LOOKUP[${outputs[2]}]}))
+        ((subCount += ${DIGIT_LOOKUP[${outputs[3]}]}))
+
+        echo "Count for this line is $subCount"
+        ((totalCount += subCount))
+    done < input
+
+    echo "Total count = $totalCount"
+}
+
+main "$@"
