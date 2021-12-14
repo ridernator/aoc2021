@@ -1,0 +1,65 @@
+#!/bin/bash
+
+main() {
+    local -a map
+    local -i index=0
+
+    # Read in map
+    while read line; do
+        map[$((index++))]=$line
+    done < input
+
+    local -ri mapHeight=$index
+    local -ri mapWidth=${#map[0]}
+
+    local -i riskLevelSum=0
+
+    for ((indexA=0; indexA<mapHeight; ++indexA)); do
+        for ((indexB=0; indexB<mapWidth; ++indexB)); do
+            local -i compIndex=0
+            local -a comparators;
+            local lowPointFound=1
+            
+            if test $indexA -ne 0; then
+                comparators[$((compIndex++))]=${map[$((indexA - 1))]:$indexB:1}
+            fi
+            
+            if test $indexA -ne $((mapHeight - 1)); then
+                comparators[$((compIndex++))]=${map[$((indexA + 1))]:$indexB:1}
+            fi
+            
+            if test $indexB -ne 0; then
+                comparators[$((compIndex++))]=${map[$indexA]:$((indexB - 1)):1}
+            fi
+            
+            if test $indexB -ne $((mapWidth - 1)); then
+                comparators[$((compIndex++))]=${map[$indexA]:$((indexB + 1)):1}
+            fi
+
+            for comparator in ${comparators[@]}; do
+                if test $comparator -lt ${map[$indexA]:$indexB:1}; then
+                    lowPointFound=0
+                    break
+                fi
+            done
+
+            if test ${map[$indexA]:$indexB:1} -eq 9; then
+                lowPointFound=0
+            fi
+
+            if test $lowPointFound -eq 1; then
+                #echo "Low point found. Risk level $((${map[$indexA]:$indexB:1} + 1))"
+                ((riskLevelSum += ${map[$indexA]:$indexB:1} + 1))
+                echo -en "\033[7m${map[$indexA]:$indexB:1}\033[0m"
+            else
+                echo -n "${map[$indexA]:$indexB:1}"
+            fi
+        done
+
+        echo
+    done
+
+    echo "Risk level sum is $riskLevelSum"
+}
+
+main "$@"
