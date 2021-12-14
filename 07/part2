@@ -1,27 +1,42 @@
 #!/bin/bash
 
-declare -ri ITERATIONS=256
-
 main() {
-    local -a fish=($(grep ',' input2 | tr ',' '\n'))
+    local -a crabs=($(grep ',' input | tr ',' '\n'))
+    local -i min=9999999
+    local -i max=0
 
-    for ((day=0; day < ITERATIONS; ++day)); do
-        fishSize=${#fish[@]}
-        additionalFishCount=0
-        for ((index=0; index<fishSize; ++index)); do
-            if test $((--fish[index])) -lt 0; then
-                fish[$index]=6
-                fish[$((fishSize + additionalFishCount++))]=8
-            fi
+    for crab in ${crabs[@]}; do
+        if test $crab -gt $max; then
+            max=$crab
+        fi
+
+        if test $crab -lt $min; then
+            min=$crab
+        fi
+    done
+
+    echo "Min is $min, max=$max"
+
+    minFuel=9999999
+    for ((index=min; index <= max; ++index)); do
+        fuel=0
+
+        for crab in ${crabs[@]}; do
+            distance=$((crab - index))
+            distance=${distance#-}
+
+            for ((miniFuel=1; miniFuel<=distance; ++miniFuel)); do
+                ((fuel += miniFuel))
+            done
         done
 
-        echo "Number of fish after day $((day + 1))=${#fish[@]}"
-
-#        for ((index=0; index<${#fish[@]}; ++index)); do
-#            echo -n "${fish[$index]},"
-#        done
-#        echo
+        echo "Fuel at index $index is $fuel"
+        if test $fuel -lt $minFuel; then
+            minFuel=$fuel
+        fi
     done
+
+    echo "Minimum fuel needed is $minFuel"
 }
 
 main "$@"
