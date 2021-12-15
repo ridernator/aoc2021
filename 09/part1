@@ -48,7 +48,6 @@ main() {
             fi
 
             if test $lowPointFound -eq 1; then
-                #echo "Low point found. Risk level $((${map[$indexA]:$indexB:1} + 1))"
                 ((riskLevelSum += ${map[$indexA]:$indexB:1} + 1))
                 echo -en "\033[7m${map[$indexA]:$indexB:1}\033[0m"
             else
